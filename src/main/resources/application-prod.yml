@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://8.130.112.101:3306/user_center?useSSL=false
+    username: root
+    password: 1234
+  session:
+    timeout: 86400
