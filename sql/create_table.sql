@@ -19,6 +19,7 @@ create table user
     tags         varchar(1024)     null comment '标签列表'
 );
 alter table user add column tags varchar(1024) null comment '标签列表';
+alter table user add column profile varchar(512) null comment '个人描述';
 
 
 create table tag

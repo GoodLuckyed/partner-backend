@@ -229,6 +229,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 修改用户信息
+     * @param user
+     * @return
+     */
+    @Override
+    public int updateUser(User user,HttpServletRequest request) {
+        long userId = user.getId();
+        if (userId < 0){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        if (request == null){
+            return 0;
+        }
+        User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        //如果为管理员可以更新任何用户
+        //如果不是管理员,只允许更新自己的信息
+        if (!isAdmin(loginUser) && loginUser.getId() != user.getId()){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = userMapper.selectById(userId);
+        if (oldUser == null){
+            throw new BusinessException(ErrorCode.PARAM_NULL);
+        }
+        return userMapper.updateById(user);
+    }
+
+    /**
+     * 是否为管理员
+     * @param request
+     * @return
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        User user = (User) userObj;
+        if (user == null && user.getUserRole() != UserConstant.ADMIN_ROLE) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 是否为管理员
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public boolean isAdmin(User loginUser){
+        return loginUser != null && loginUser.getUserRole() == UserConstant.ADMIN_ROLE;
+    }
+
+    /**
      * 根据标签搜索用户 (SQL 查询版)
      *
      * @param tagNameList

@@ -2,6 +2,9 @@ server:
   port: 8080
   servlet:
     context-path: /api
+    session:
+      cookie:
+        domain: localhost  #同一域名下共享cookie
 spring:
   application:
     name: partner-backend
@@ -10,8 +13,14 @@ spring:
     url: jdbc:mysql://localhost:3306/yuyan
     username: root
     password: 1234
+  #redis配置、
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
   session:
     timeout: 86400
+    store-type: redis
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
