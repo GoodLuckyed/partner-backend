@@ -1,5 +1,6 @@
 package com.yuyan.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuyan.model.domain.User;
 
@@ -47,11 +48,26 @@ public interface UserService extends IService<User> {
     int userLogout(HttpServletRequest request);
 
     /**
+     * 获取当前登录用户信息
+     * @param request
+     * @return
+     */
+    User getCurrentUser(HttpServletRequest request);
+
+    /**
      * 根据标签搜索用户
      * @param tagNameList
      * @return
      */
     List<User> searchUsersByTags(List<String> tagNameList);
+
+    /**
+     * 推荐页面（主页接口）
+     * @param pageModel
+     * @param request
+     * @return
+     */
+    Page<User> recommend(Page<User> pageModel, HttpServletRequest request);
 
     /**
      * 修改用户信息

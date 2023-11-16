@@ -1,6 +1,8 @@
 package com.yuyan.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuyan.common.BaseResponse;
 import com.yuyan.common.ErrorCode;
 import com.yuyan.common.ResultUtils;
@@ -91,21 +93,13 @@ public class UserController {
     }
 
     /**
-     * 获取当前用户信息
+     * 获取当前登录用户信息
      * @param request
      * @return
      */
     @GetMapping("/current")
     public BaseResponse<User> getCurrentUser(HttpServletRequest request){
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
-        User currentUser = (User) userObj;
-        if (currentUser == null){
-            throw new BusinessException(ErrorCode.NO_LOGIN);
-        }
-        //获取用户id
-        Long userId = currentUser.getId();
-        User user = userService.getById(userId);
-        User safetyUser = userService.getSafetyUser(user);
+        User safetyUser = userService.getCurrentUser(request);
         return ResultUtils.success(safetyUser);
     }
 
@@ -129,7 +123,25 @@ public class UserController {
         }
         List<User> userList = userService.list(queryWrapper);
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtils.success(list);
+            return ResultUtils.success(list);
+    }
+
+    /**
+     * 推荐页面（主页接口）
+     * @param request
+     * @return
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<List<User>> recommend(long currentPage,long pageSize,HttpServletRequest request) {
+        //创建分页对象
+        Page<User> pageModel = new Page<>(currentPage, pageSize);
+        //调用service查询
+        Page<User> userPage = userService.recommend(pageModel,request);
+        //获取查询结果
+        List<User> userList = userPage.getRecords();
+        //脱敏
+        userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(userList);
     }
 
     /**

@@ -1,10 +1,13 @@
 package com.yuyan.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.yuyan.common.ErrorCode;
+import com.yuyan.common.ResultUtils;
 import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.User;
@@ -12,6 +15,10 @@ import com.yuyan.service.UserService;
 import com.yuyan.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -19,6 +26,7 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,6 +42,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     private UserMapper userMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 盐值 ==》 用来混淆密码
@@ -198,6 +209,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 获取当前登录用户信息
+     * @param request
+     * @return
+     */
+    @Override
+    public User getCurrentUser(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        User currentUser = (User) userObj;
+        if (currentUser == null){
+            throw new BusinessException(ErrorCode.NO_LOGIN);
+        }
+        //获取用户id
+        Long userId = currentUser.getId();
+        User user = userMapper.selectById(userId);
+        User safetyUser = getSafetyUser(user);
+        return safetyUser;
+    }
+
+    /**
      * 根据标签搜索用户 (内存查询版)
      * @param tagNameList
      * @return
@@ -226,6 +256,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("user:" + user);
             return getSafetyUser(user);
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 推荐页面（主页接口）
+     * @param pageModel
+     * @param request
+     * @return
+     */
+    @Override
+    public Page<User> recommend(Page<User> pageModel, HttpServletRequest request) {
+        //先查缓存
+        User currentUser = getCurrentUser(request);
+        String redisKey = String.format("partner:user:recommend:%s",currentUser.getId());
+        Page<User> userPage = (Page<User>) redisTemplate.opsForValue().get(redisKey);
+        if (userPage != null){
+            return userPage;
+        }
+        //如果没有缓存，再查数据库
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        userPage = userMapper.selectPage(pageModel, queryWrapper);
+        //写入缓存
+        try {
+            redisTemplate.opsForValue().set(redisKey,userPage,60000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("redis set key error:{}",e);
+        }
+        return userPage;
     }
 
     /**
