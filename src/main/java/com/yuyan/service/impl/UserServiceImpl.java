@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * @author Yuyan
+ * @author lucky
  * @description 针对表【user】的数据库操作Service实现
  * @createDate 2023-07-20 00:18:58
  */

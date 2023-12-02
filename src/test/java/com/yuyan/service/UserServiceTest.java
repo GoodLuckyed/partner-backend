@@ -29,7 +29,7 @@ public class UserServiceTest {
         user.setUserStatus(0);
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
-        user.setIsDelte(0);
+        user.setIsDelete(0);
         boolean result = userService.save(user);
         Assertions.assertTrue(result);
         System.out.println(user.getId());

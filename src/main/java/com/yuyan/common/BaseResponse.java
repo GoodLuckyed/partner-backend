@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * 通用返回对象
- * @author yuyan
+ * @author lucky
  * @date 2023/7/27 10:11
  */
 @Data

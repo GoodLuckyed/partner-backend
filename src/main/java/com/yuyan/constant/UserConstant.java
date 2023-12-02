@@ -2,7 +2,7 @@ package com.yuyan.constant;
 
 /**
  * 用户常量
- * @author yuyan
+ * @author lucky
  * @date 2023/7/22 16:39
  */
 public class UserConstant {

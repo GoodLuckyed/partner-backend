@@ -10,7 +10,7 @@ spring:
     name: partner-backend
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yuyan
+    url: jdbc:mysql://localhost:3306/partner?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: 1234
   #redis配置、

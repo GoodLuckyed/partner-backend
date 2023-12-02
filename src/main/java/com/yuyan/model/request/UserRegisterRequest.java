@@ -1,4 +1,4 @@
-package com.yuyan.model.domain.request;
+package com.yuyan.model.request;
 
 import lombok.Data;
 

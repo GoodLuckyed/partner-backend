@@ -1,16 +1,14 @@
 package com.yuyan.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuyan.common.BaseResponse;
 import com.yuyan.common.ErrorCode;
 import com.yuyan.common.ResultUtils;
-import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.User;
-import com.yuyan.model.domain.request.UserLoginRequest;
-import com.yuyan.model.domain.request.UserRegisterRequest;
+import com.yuyan.model.request.UserLoginRequest;
+import com.yuyan.model.request.UserRegisterRequest;
 import com.yuyan.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -24,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 用户接口
  *
- * @author yuyan
+ * @author lucky
  * @date 2023/7/22 16:18
  */
 

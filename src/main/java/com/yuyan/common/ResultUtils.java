@@ -2,7 +2,7 @@ package com.yuyan.common;
 
 /**
  * 返回工具类
- * @author yuyan
+ * @author lucky
  * @date 2023/7/27 10:16
  */
 public class ResultUtils {

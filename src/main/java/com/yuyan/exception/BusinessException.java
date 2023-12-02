@@ -5,7 +5,7 @@ import lombok.Data;
 
 /**
  * 自定义异常
- * @author yuyan
+ * @author lucky
  * @date 2023/7/27 15:35
  */
 @Data

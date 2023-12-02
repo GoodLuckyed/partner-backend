@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author yuyan
+ * @author lucky
  * @date 2023/11/21
  */
 //redisson配置

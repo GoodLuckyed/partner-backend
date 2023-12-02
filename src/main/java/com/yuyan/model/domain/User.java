@@ -73,7 +73,7 @@ public class User implements Serializable {
      * 是否删除
      */
     @TableLogic
-    private Integer isDelte;
+    private Integer isDelete;
 
     /**
      * 星球编号

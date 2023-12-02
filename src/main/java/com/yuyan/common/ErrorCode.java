@@ -2,7 +2,7 @@ package com.yuyan.common;
 
 /**
  * 错误码
- * @author yuyan
+ * @author lucky
  * @date 2023/7/27 10:55
  */
 public enum ErrorCode {
