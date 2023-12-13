@@ -3,6 +3,12 @@ package com.yuyan.service;
 import com.yuyan.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.dto.TeamQuery;
+import com.yuyan.model.request.TeamJoinRequest;
+import com.yuyan.model.request.TeamUpdateRequest;
+import com.yuyan.model.vo.TeamUserVo;
+
+import java.util.List;
 
 /**
 * @author lucky
@@ -18,4 +24,27 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     long addTeam(Team team, User currentUser);
+
+    /**
+     *根据条件查询队伍
+     * @param teamQuery
+     * @return
+     */
+    List<TeamUserVo> listTeams(TeamQuery teamQuery,boolean isAdmin);
+
+    /**
+     * 修改队伍
+     * @param teamUpdateRequest
+     * @param currentUser
+     * @return
+     */
+    boolean updateTeam(TeamUpdateRequest teamUpdateRequest, User currentUser);
+
+    /**
+     * 用户加入队伍
+     * @param teamJoinRequest
+     * @param currentUser
+     * @return
+     */
+    boolean joinTeam(TeamJoinRequest teamJoinRequest, User currentUser);
 }

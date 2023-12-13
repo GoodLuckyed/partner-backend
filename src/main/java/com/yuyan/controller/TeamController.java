@@ -11,6 +11,9 @@ import com.yuyan.model.domain.Team;
 import com.yuyan.model.domain.User;
 import com.yuyan.model.dto.TeamQuery;
 import com.yuyan.model.request.TeamAddRequest;
+import com.yuyan.model.request.TeamJoinRequest;
+import com.yuyan.model.request.TeamUpdateRequest;
+import com.yuyan.model.vo.TeamUserVo;
 import com.yuyan.service.TeamService;
 import com.yuyan.service.UserService;
 import io.swagger.annotations.Api;
@@ -52,11 +55,12 @@ public class TeamController {
 
     @ApiOperation("修改队伍")
     @PostMapping("/updateTeam")
-    public BaseResponse<Boolean> updateTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest,HttpServletRequest request) {
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
-        boolean result = teamService.updateById(team);
+        User currentUser = userService.getCurrentUser(request);
+        boolean result = teamService.updateTeam(teamUpdateRequest,currentUser);
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERR, "修改队伍失败");
         }
@@ -89,16 +93,14 @@ public class TeamController {
         return ResultUtils.success(team);
     }
 
-    @ApiOperation("查询多个队伍")
+    @ApiOperation("根据条件查询队伍")
     @GetMapping("/list")
-    public BaseResponse<List<Team>> listTeams(TeamQuery teamQuery){
+    public BaseResponse<List<TeamUserVo>> listTeams(TeamQuery teamQuery,HttpServletRequest request){
         if (teamQuery == null){
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(teamQuery,team);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        List<Team> teamList = teamService.list(queryWrapper);
+        boolean isAdmin = userService.isAdmin(request);
+        List<TeamUserVo> teamList = teamService.listTeams(teamQuery,isAdmin);
         return ResultUtils.success(teamList);
     }
 
@@ -114,5 +116,16 @@ public class TeamController {
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
         Page<Team> pageResult = teamService.page(teamPage, queryWrapper);
         return ResultUtils.success(pageResult);
+    }
+
+    @ApiOperation("用户加入队伍")
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request){
+        if (teamJoinRequest == null){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        boolean result = teamService.joinTeam(teamJoinRequest,currentUser);
+        return ResultUtils.success(result);
     }
 }
