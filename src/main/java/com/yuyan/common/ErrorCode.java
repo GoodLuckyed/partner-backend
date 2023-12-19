@@ -11,6 +11,7 @@ public enum ErrorCode {
     PARAM_NULL(40001,"请求数据为空",""),
     NO_LOGIN(40100,"未登录",""),
     NO_AUTH(40101,"无权限",""),
+    FORBIDDEN(40300,"禁止访问",""),
     SYSTEM_ERR(50000,"系统内部错误",""),
     EXECUTE_ERR(40102,"执行错误","");
 

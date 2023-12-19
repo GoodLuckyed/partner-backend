@@ -1,10 +1,12 @@
 package com.yuyan.service;
 
+import com.yuyan.common.BaseResponse;
 import com.yuyan.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuyan.model.domain.User;
 import com.yuyan.model.dto.TeamQuery;
 import com.yuyan.model.request.TeamJoinRequest;
+import com.yuyan.model.request.TeamQuitRequest;
 import com.yuyan.model.request.TeamUpdateRequest;
 import com.yuyan.model.vo.TeamUserVo;
 
@@ -47,4 +49,20 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     boolean joinTeam(TeamJoinRequest teamJoinRequest, User currentUser);
+
+    /**
+     * 用户退出队伍
+     * @param teamQuitRequest
+     * @param currentUser
+     * @return
+     */
+    boolean quitTeam(TeamQuitRequest teamQuitRequest, User currentUser);
+
+    /**
+     * 删除（解散）队伍
+     * @param teamId
+     * @param currentUser
+     * @return
+     */
+    boolean deleteTeam(Long teamId, User currentUser);
 }

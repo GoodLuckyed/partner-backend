@@ -12,6 +12,7 @@ import com.yuyan.model.domain.User;
 import com.yuyan.model.dto.TeamQuery;
 import com.yuyan.model.request.TeamAddRequest;
 import com.yuyan.model.request.TeamJoinRequest;
+import com.yuyan.model.request.TeamQuitRequest;
 import com.yuyan.model.request.TeamUpdateRequest;
 import com.yuyan.model.vo.TeamUserVo;
 import com.yuyan.service.TeamService;
@@ -48,34 +49,21 @@ public class TeamController {
         }
         User currentUser = userService.getCurrentUser(request);
         Team team = new Team();
-        BeanUtils.copyProperties(teamAddRequest,team);
-        long teamId = teamService.addTeam(team,currentUser);
+        BeanUtils.copyProperties(teamAddRequest, team);
+        long teamId = teamService.addTeam(team, currentUser);
         return ResultUtils.success(teamId);
     }
 
     @ApiOperation("修改队伍")
     @PostMapping("/updateTeam")
-    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest,HttpServletRequest request) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
         if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         User currentUser = userService.getCurrentUser(request);
-        boolean result = teamService.updateTeam(teamUpdateRequest,currentUser);
+        boolean result = teamService.updateTeam(teamUpdateRequest, currentUser);
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERR, "修改队伍失败");
-        }
-        return ResultUtils.success(true);
-    }
-
-    @ApiOperation("删除队伍")
-    @PostMapping("/deleteTeam")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody Long id) {
-        if (id <= 0) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
-        boolean result = teamService.removeById(id);
-        if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERR, "删除队伍失败");
         }
         return ResultUtils.success(true);
     }
@@ -95,23 +83,23 @@ public class TeamController {
 
     @ApiOperation("根据条件查询队伍")
     @GetMapping("/list")
-    public BaseResponse<List<TeamUserVo>> listTeams(TeamQuery teamQuery,HttpServletRequest request){
-        if (teamQuery == null){
+    public BaseResponse<List<TeamUserVo>> listTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         boolean isAdmin = userService.isAdmin(request);
-        List<TeamUserVo> teamList = teamService.listTeams(teamQuery,isAdmin);
+        List<TeamUserVo> teamList = teamService.listTeams(teamQuery, isAdmin);
         return ResultUtils.success(teamList);
     }
 
     @ApiOperation("分页查询")
     @GetMapping("/list/page")
-    public BaseResponse<Page<Team>> listTeamsByPage(TeamQuery teamQuery){
-        if (teamQuery == null){
+    public BaseResponse<Page<Team>> listTeamsByPage(TeamQuery teamQuery) {
+        if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         Team team = new Team();
-        BeanUtils.copyProperties(teamQuery,team);
+        BeanUtils.copyProperties(teamQuery, team);
         Page<Team> teamPage = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
         Page<Team> pageResult = teamService.page(teamPage, queryWrapper);
@@ -120,12 +108,37 @@ public class TeamController {
 
     @ApiOperation("用户加入队伍")
     @PostMapping("/join")
-    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request){
-        if (teamJoinRequest == null){
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest request) {
+        if (teamJoinRequest == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         User currentUser = userService.getCurrentUser(request);
-        boolean result = teamService.joinTeam(teamJoinRequest,currentUser);
+        boolean result = teamService.joinTeam(teamJoinRequest, currentUser);
         return ResultUtils.success(result);
+    }
+
+    @ApiOperation("用户退出队伍")
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest request) {
+        if(teamQuitRequest == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        boolean result = teamService.quitTeam(teamQuitRequest, currentUser);
+        return ResultUtils.success(result);
+    }
+
+    @ApiOperation("删除/解散队伍")
+    @PostMapping("/deleteTeam")
+    public BaseResponse<Boolean> deleteTeam(@RequestBody Long teamId,HttpServletRequest request) {
+        if (teamId <= 0) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        boolean result = teamService.deleteTeam(teamId, currentUser);
+        if (!result) {
+            throw new BusinessException(ErrorCode.EXECUTE_ERR, "删除队伍失败");
+        }
+        return ResultUtils.success(true);
     }
 }
