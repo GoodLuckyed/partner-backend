@@ -89,8 +89,27 @@ public class TeamController {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
+        //1.查询队伍列表
         boolean isAdmin = userService.isAdmin(request);
         List<TeamUserVo> teamList = teamService.listTeams(teamQuery, isAdmin);
+        //2.判断是否已经加入队伍
+        List<Long> teamIdList = teamList.stream().map(TeamUserVo::getId).collect(Collectors.toList());
+        try {
+            User currentUser = userService.getCurrentUser(request);
+            QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("userId",currentUser.getId());
+            queryWrapper.in("teamId",teamIdList);
+            //已加入的队伍列表
+            List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+            List<Long> hasJoinTeamIdList = userTeamList.stream().map(UserTeam::getTeamId).collect(Collectors.toList());
+            teamList.forEach(teamUserVo -> {
+                if(hasJoinTeamIdList.contains(teamUserVo.getId())) {
+                    teamUserVo.setHasJoin(true);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return ResultUtils.success(teamList);
     }
 
