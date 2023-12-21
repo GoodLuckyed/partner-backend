@@ -89,4 +89,12 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean isAdmin(User loginUser);
+
+    /**
+     * 获取最匹配的用户
+     * @param num
+     * @param currentUser
+     * @return
+     */
+    List<User> matchUsers(long num, User currentUser);
 }

@@ -192,4 +192,20 @@ public class UserController {
         boolean b = userService.removeById(id);
         return ResultUtils.success(b);
     }
+
+    /**
+     * 获取最匹配的用户
+     * @param num
+     * @param request
+     * @return
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+
+        return ResultUtils.success(userService.matchUsers(num,currentUser));
+    }
 }

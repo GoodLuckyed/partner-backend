@@ -3,6 +3,8 @@ package com.yuyan.model.dto;
 import com.yuyan.common.PageRequest;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author lucky
  * @date 2023/12/1
@@ -13,6 +15,11 @@ public class TeamQuery extends PageRequest {
      * id
      */
     private Long id;
+
+    /**
+     * 队伍id列表
+     */
+    private List<Long> idList;
 
     /**
      * 队伍名称

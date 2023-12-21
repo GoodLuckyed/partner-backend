@@ -9,14 +9,13 @@ import com.yuyan.common.ResultUtils;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.Team;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.domain.UserTeam;
 import com.yuyan.model.dto.TeamQuery;
-import com.yuyan.model.request.TeamAddRequest;
-import com.yuyan.model.request.TeamJoinRequest;
-import com.yuyan.model.request.TeamQuitRequest;
-import com.yuyan.model.request.TeamUpdateRequest;
+import com.yuyan.model.request.*;
 import com.yuyan.model.vo.TeamUserVo;
 import com.yuyan.service.TeamService;
 import com.yuyan.service.UserService;
+import com.yuyan.service.UserTeamService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lucky
@@ -41,6 +41,8 @@ public class TeamController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserTeamService userTeamService;
     @ApiOperation("添加队伍")
     @PostMapping("/addTeam")
     public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request) {
@@ -70,7 +72,7 @@ public class TeamController {
 
     @ApiOperation("根据id查询队伍")
     @GetMapping("/getTeam")
-    public BaseResponse<Team> getTeamById(@RequestBody Long id) {
+    public BaseResponse<Team> getTeamById(@RequestParam("id") Long id) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
@@ -89,6 +91,36 @@ public class TeamController {
         }
         boolean isAdmin = userService.isAdmin(request);
         List<TeamUserVo> teamList = teamService.listTeams(teamQuery, isAdmin);
+        return ResultUtils.success(teamList);
+    }
+
+    @ApiOperation("查询我创建的队伍")
+    @GetMapping("/list/my/create")
+    public BaseResponse<List<TeamUserVo>> listMyCreateTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        teamQuery.setUserId(currentUser.getId());
+        List<TeamUserVo> teamList = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(teamList);
+    }
+
+    @ApiOperation("查询我加入的队伍")
+    @GetMapping("/list/my/join")
+    public BaseResponse<List<TeamUserVo>> listMyJoinTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        long userId = currentUser.getId();
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId",userId);
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        // 获取我加入的队伍id列表
+        List<Long> idList = userTeamList.stream().map(UserTeam::getTeamId).collect(Collectors.toList());
+        teamQuery.setIdList(idList);
+        List<TeamUserVo> teamList = teamService.listTeams(teamQuery, true);
         return ResultUtils.success(teamList);
     }
 
@@ -130,10 +162,11 @@ public class TeamController {
 
     @ApiOperation("删除/解散队伍")
     @PostMapping("/deleteTeam")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody Long teamId,HttpServletRequest request) {
-        if (teamId <= 0) {
+    public BaseResponse<Boolean> deleteTeam(@RequestBody TeamDeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null || deleteRequest.getTeamId() < 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
+        long teamId = deleteRequest.getTeamId();
         User currentUser = userService.getCurrentUser(request);
         boolean result = teamService.deleteTeam(teamId, currentUser);
         if (!result) {
