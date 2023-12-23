@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -108,8 +110,13 @@ public class TeamController {
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException(e);
         }
+        //查询已加入的队伍的人数
+        QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.in("teamId",teamIdList);
+        List<UserTeam> userTeamList = userTeamService.list(userTeamQueryWrapper);
+        Map<Long, List<UserTeam>> teamIdUserTeamList = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        teamList.forEach(teamUserVo -> teamUserVo.setHasJoinNum(teamIdUserTeamList.getOrDefault(teamUserVo.getId(),new ArrayList<>()).size()));
         return ResultUtils.success(teamList);
     }
 
