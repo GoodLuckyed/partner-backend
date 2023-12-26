@@ -13,6 +13,8 @@ spring:
     url: jdbc:mysql://localhost:3306/partner?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: 1234
+  jackson:
+    time-zone: GMT+8
   #redis配置、
   redis:
     host: localhost
