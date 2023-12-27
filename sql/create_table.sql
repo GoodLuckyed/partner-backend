@@ -73,3 +73,18 @@ create table tag
     updateTime datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
     isDelete   tinyint  default 0                 not null comment '是否删除'
 ) comment '标签表';
+
+CREATE TABLE partner.notice (
+    id INT NOT NULL AUTO_INCREMENT COMMENT 'id',
+    title varchar(255) NOT NULL COMMENT '公告标题',
+    content TEXT NOT NULL COMMENT '公告内容',
+    userId BIGINT NOT NULL COMMENT '创建用户id(管理员)',
+    createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
+    updateTime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
+    isDelete TINYINT DEFAULT 0 NOT NULL COMMENT '是否删除',
+    CONSTRAINT notice_pk PRIMARY KEY (id)
+)
+    ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci
+comment '公告表';

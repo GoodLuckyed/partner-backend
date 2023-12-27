@@ -324,7 +324,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean isAdmin(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
         User user = (User) userObj;
-        if (user != null && user.getUserRole() != UserConstant.ADMIN_ROLE) {
+        if (user == null || user.getUserRole() != UserConstant.ADMIN_ROLE) {
             return false;
         }
         return true;
