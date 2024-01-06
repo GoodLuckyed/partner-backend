@@ -196,6 +196,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safeUser.setPlanetCode(originUser.getPlanetCode());
         safeUser.setCreateTime(originUser.getCreateTime());
         safeUser.setTags(originUser.getTags());
+        safeUser.setProfile(originUser.getProfile());
         return safeUser;
     }
 
@@ -281,7 +282,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         userPage = userMapper.selectPage(pageModel, queryWrapper);
         //写入缓存
         try {
-            redisTemplate.opsForValue().set(redisKey,userPage,60000, TimeUnit.MILLISECONDS);
+            redisTemplate.opsForValue().set(redisKey,userPage,24, TimeUnit.HOURS);
         } catch (Exception e) {
             log.error("redis set key error:{}",e);
         }

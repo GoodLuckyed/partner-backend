@@ -73,7 +73,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NO_LOGIN);
         }
-        final long userId = currentUser.getId();
+        final Long userId = currentUser.getId();
         //3. 校验信息
         //a. 队伍人数 > 1 且 <= 20
         Integer maxNum = Optional.ofNullable(team.getMaxNum()).orElse(0);
@@ -299,7 +299,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
                 if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
                     System.out.println("getLock: " + Thread.currentThread().getId());
                     //用户最多加入 5 个队伍
-                    long userId = currentUser.getId();
+                    Long userId = currentUser.getId();
                     QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
                     queryWrapper.eq("userId", userId);
                     long hasJoinNum = userTeamService.count(queryWrapper);
@@ -359,7 +359,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         Long teamId = teamQuitRequest.getTeamId();
         Team team = getTeamById(teamId);
         //3.判断我是否已经加入队伍
-        long userId = currentUser.getId();
+        Long userId = currentUser.getId();
         UserTeam userTeam = new UserTeam();
         userTeam.setUserId(userId);
         userTeam.setTeamId(teamId);

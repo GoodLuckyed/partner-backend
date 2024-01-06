@@ -139,7 +139,7 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         User currentUser = userService.getCurrentUser(request);
-        long userId = currentUser.getId();
+        Long userId = currentUser.getId();
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId",userId);
         List<UserTeam> userTeamList = userTeamService.list(queryWrapper);

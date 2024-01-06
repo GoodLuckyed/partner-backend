@@ -74,7 +74,8 @@ create table tag
     isDelete   tinyint  default 0                 not null comment '是否删除'
 ) comment '标签表';
 
-CREATE TABLE partner.notice (
+-- 公告表
+CREATE TABLE `notice` (
     id INT NOT NULL AUTO_INCREMENT COMMENT 'id',
     title varchar(255) NOT NULL COMMENT '公告标题',
     content TEXT NOT NULL COMMENT '公告内容',
@@ -86,5 +87,57 @@ CREATE TABLE partner.notice (
 )
     ENGINE=InnoDB
 DEFAULT CHARSET=utf8
-COLLATE=utf8_general_ci
-comment '公告表';
+COLLATE=utf8_general_ci;
+
+
+-- 帖文表
+CREATE TABLE `post` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '帖文id',
+    `title` varchar(255) NOT NULL COMMENT '帖文标题',
+    `content` text NOT NULL COMMENT '帖文内容',
+    `image` varchar(1024) DEFAULT NULL COMMENT '图片',
+    `userId` bigint(20) NOT NULL COMMENT '创建人',
+    `likes` int(8) DEFAULT '0' COMMENT '点赞数量',
+    `comments` int(8) DEFAULT NULL COMMENT '评论数量',
+    `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+-- 帖文评论表
+CREATE TABLE `post_comments` (
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `userId` bigint(20) unsigned NOT NULL COMMENT '用户id',
+    `postId` bigint(20) unsigned NOT NULL COMMENT '帖文id',
+    `parentId` bigint(20) unsigned NOT NULL COMMENT  '关联的1级评论id，如果是一级评论，则值为0',
+    `answerId` bigint(20) unsigned NOT NULL COMMENT '回复的评论id',
+    `content` varchar(255) NOT NULL COMMENT '回复的内容',
+    `likes` int(8) unsigned DEFAULT NULL COMMENT '点赞数',
+    `status` tinyint(1) unsigned DEFAULT NULL COMMENT '状态，0：正常，1：被举报，2：禁止查看',
+    `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT;
+
+-- 帖文点赞表
+CREATE TABLE `post_like` (
+     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+     `postId` bigint(20) NOT NULL COMMENT '帖文id',
+     `userId` bigint(20) NOT NULL COMMENT '用户id',
+     `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     `isDelete` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
+     PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 关注表
+CREATE TABLE `follow` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+      `userId` bigint(20) NOT NULL COMMENT '用户id',
+      `followUserId` bigint(20) NOT NULL COMMENT '关注的用户id',
+      `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+      `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
+      PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

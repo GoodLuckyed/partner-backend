@@ -50,7 +50,7 @@ public class NoticeController {
         }
         Notice notice = new Notice();
         BeanUtils.copyProperties(noticeAddRequest,notice);
-        long userId = currentUser.getId();
+        Long userId = currentUser.getId();
         notice.setUserId(userId);
         //3.添加公告
         boolean result = noticeService.save(notice);

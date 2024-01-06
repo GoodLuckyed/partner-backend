@@ -9,8 +9,10 @@ import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.User;
 import com.yuyan.model.request.UserLoginRequest;
 import com.yuyan.model.request.UserRegisterRequest;
+import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -207,5 +209,19 @@ public class UserController {
         User currentUser = userService.getCurrentUser(request);
 
         return ResultUtils.success(userService.matchUsers(num,currentUser));
+    }
+
+    /**
+     * 根据userId获取用户信息
+     */
+    @GetMapping("/{id}")
+    public BaseResponse<UserVo> getUserById(@PathVariable("id") Long id){
+        if (id <= 0){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User user = userService.getById(id);
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user,userVo);
+        return ResultUtils.success(userVo);
     }
 }

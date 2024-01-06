@@ -24,7 +24,7 @@ public class UserVo implements Serializable {
      * id
      */
     @TableId(type = IdType.AUTO)
-    private long id;
+    private Long id;
 
     /**
      * 用户昵称
@@ -91,4 +91,8 @@ public class UserVo implements Serializable {
      */
     private String profile;
 
+    /**
+     * 是否关注
+     */
+    private Boolean isFollow;
 }
