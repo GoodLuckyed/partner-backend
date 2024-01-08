@@ -1,18 +1,20 @@
 package com.yuyan.model.domain;
 
-import com.baomidou.mybatisplus.annotation.*;
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
 /**
  * 
- * @TableName follow
+ * @TableName comment_like
  */
-@TableName(value ="follow")
+@TableName(value ="comment_like")
 @Data
-public class Follow implements Serializable {
+public class CommentLike implements Serializable {
     /**
      * id
      */
@@ -20,14 +22,14 @@ public class Follow implements Serializable {
     private Long id;
 
     /**
+     * 评论id
+     */
+    private Long commentId;
+
+    /**
      * 用户id
      */
     private Long userId;
-
-    /**
-     * 关注的用户id
-     */
-    private Long followUserId;
 
     /**
      * 创建时间
@@ -42,7 +44,6 @@ public class Follow implements Serializable {
     /**
      * 是否删除
      */
-    @TableLogic
     private Integer isDelete;
 
     @TableField(exist = false)

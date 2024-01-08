@@ -107,17 +107,17 @@ CREATE TABLE `post` (
 
 -- 帖文评论表
 CREATE TABLE `post_comments` (
-    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `userId` bigint(20) unsigned NOT NULL COMMENT '用户id',
-    `postId` bigint(20) unsigned NOT NULL COMMENT '帖文id',
-    `parentId` bigint(20) unsigned NOT NULL COMMENT  '关联的1级评论id，如果是一级评论，则值为0',
-    `answerId` bigint(20) unsigned NOT NULL COMMENT '回复的评论id',
-    `content` varchar(255) NOT NULL COMMENT '回复的内容',
-    `likes` int(8) unsigned DEFAULT NULL COMMENT '点赞数',
-    `status` tinyint(1) unsigned DEFAULT NULL COMMENT '状态，0：正常，1：被举报，2：禁止查看',
-    `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`) USING BTREE
+     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+     `userId` bigint(20) unsigned NOT NULL COMMENT '用户id',
+     `postId` bigint(20) unsigned NOT NULL COMMENT '帖文id',
+     `parentId` bigint(20) unsigned DEFAULT NULL COMMENT '关联的1级评论id，如果是一级评论，则值为0',
+     `answerId` bigint(20) unsigned DEFAULT NULL COMMENT '回复的评论id',
+     `content` varchar(255) NOT NULL COMMENT '回复的内容',
+     `likes` int(8) unsigned DEFAULT NULL COMMENT '点赞数',
+     `status` tinyint(1) unsigned DEFAULT NULL COMMENT '状态，0：正常，1：被举报，2：禁止查看',
+     `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT;
 
 -- 帖文点赞表
@@ -129,6 +129,17 @@ CREATE TABLE `post_like` (
      `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
      `isDelete` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
      PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 评论点赞表
+CREATE TABLE `comment_like` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `commentId` bigint(20) NOT NULL COMMENT '评论id',
+    `userId` bigint(20) NOT NULL COMMENT '用户id',
+    `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 关注表
