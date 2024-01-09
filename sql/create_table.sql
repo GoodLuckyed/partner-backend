@@ -127,7 +127,6 @@ CREATE TABLE `post_like` (
      `userId` bigint(20) NOT NULL COMMENT '用户id',
      `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
      `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-     `isDelete` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
      PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -138,7 +137,6 @@ CREATE TABLE `comment_like` (
     `userId` bigint(20) NOT NULL COMMENT '用户id',
     `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

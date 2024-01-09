@@ -41,11 +41,6 @@ public class CommentLike implements Serializable {
      */
     private Date updateTime;
 
-    /**
-     * 是否删除
-     */
-    private Integer isDelete;
-
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

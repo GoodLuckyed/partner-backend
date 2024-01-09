@@ -7,4 +7,5 @@ package com.yuyan.constant;
 public class RedisConstants {
 
     public static final String POST_LIKE_KEY = "post:like:";
+    public static final String COMMENT_LIKE_KEY = "comment:like:";
 }

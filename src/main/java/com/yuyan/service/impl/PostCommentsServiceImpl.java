@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.yuyan.common.ErrorCode;
+import com.yuyan.constant.RedisConstants;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.CommentLike;
 import com.yuyan.model.domain.Post;
@@ -18,11 +19,16 @@ import com.yuyan.mapper.PostCommentsMapper;
 import com.yuyan.service.PostService;
 import com.yuyan.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +37,7 @@ import java.util.stream.Collectors;
 * @createDate 2024-01-02 23:57:44
 */
 @Service
+@Slf4j
 public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, PostComments> implements PostCommentsService{
 
 
@@ -40,12 +47,15 @@ public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, Pos
     private UserService userService;
     @Autowired
     private CommentLikeService commentLikeService;
+    @Autowired
+    private RedissonClient redissonClient;
 
     /**
      * 添加评论
      * @param addCommentRequest
      * @param userId
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addComment(AddCommentRequest addCommentRequest, long userId) {
         PostComments postComments = new PostComments();
@@ -131,6 +141,48 @@ public class PostCommentsServiceImpl extends ServiceImpl<PostCommentsMapper, Pos
         this.removeById(id);
         Integer commentNum = postService.getById(postComments.getPostId()).getComments();
         postService.update().set("comments",commentNum - 1).eq("id",postComments.getPostId()).update();
+    }
+
+    /**
+     * 点赞评论
+     * @param id 评论id
+     * @param userId 用户id
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void likeComment(Long id, Long userId) {
+        RLock lock = redissonClient.getLock(RedisConstants.COMMENT_LIKE_KEY + id + ":" + userId);
+        try {
+            if (lock.tryLock(0,-1, TimeUnit.MILLISECONDS)) {
+                PostComments postComments = this.getById(id);
+                if (postComments == null) {
+                    throw new BusinessException(ErrorCode.PARAM_NULL);
+                }
+                LambdaQueryWrapper<CommentLike> commentLikeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                commentLikeLambdaQueryWrapper.eq(CommentLike::getCommentId, id).eq(CommentLike::getUserId, userId);
+                long count = commentLikeService.count(commentLikeLambdaQueryWrapper);
+                if (count > 0) {
+                    //已经点赞 取消点赞
+                    commentLikeService.remove(commentLikeLambdaQueryWrapper);
+                    this.update().set("likes", postComments.getLikes() - 1).eq("id", id).update();
+                    //todo 消息通知
+                } else {
+                    //未点赞 可以点赞
+                    CommentLike commentLike = new CommentLike();
+                    commentLike.setCommentId(id);
+                    commentLike.setUserId(userId);
+                    commentLikeService.save(commentLike);
+                    this.update().set("likes", postComments.getLikes() + 1).eq("id", id).update();
+                    //todo 消息通知
+                }
+            }
+        } catch (InterruptedException e) {
+           log.error("commentLike error",e);
+        } finally {
+            if (lock.isHeldByCurrentThread()){
+                lock.unlock();
+            }
+        }
     }
 }
 

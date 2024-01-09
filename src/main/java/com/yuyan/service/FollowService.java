@@ -10,4 +10,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface FollowService extends IService<Follow> {
 
+    /**
+     * 关注用户
+     * @param id 关注用户id
+     * @param userId 当前用户id
+     */
+    void followUser(Long id, Long userId);
 }

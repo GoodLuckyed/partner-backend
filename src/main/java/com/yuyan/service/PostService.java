@@ -58,4 +58,11 @@ public interface PostService extends IService<Post> {
      * @return
      */
     Boolean updatePost(PostUpdateRequest postUpdateRequest, Long userId, boolean isAdmin);
+
+    /**
+     * 点赞帖文
+     * @param id
+     * @param userId
+     */
+    void likePost(Long id, Long userId);
 }

@@ -43,4 +43,12 @@ public interface PostCommentsService extends IService<PostComments> {
      * @param isAdmin
      */
     void deleteComment(Long id, Long userId, boolean isAdmin);
+
+
+    /**
+     * 点赞评论
+     * @param id 评论id
+     * @param userId 用户id
+     */
+    void likeComment(Long id, Long userId);
 }

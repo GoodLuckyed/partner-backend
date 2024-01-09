@@ -110,6 +110,21 @@ public class PostController {
         boolean isAdmin = userService.isAdmin(currentUser);
         return ResultUtils.success(postService.updatePost(postUpdateRequest,currentUser.getId(),isAdmin));
     }
+
+    @ApiOperation("点赞帖文")
+    @PutMapping("/like/{id}")
+    public BaseResponse<String> likePost(@PathVariable("id") Long id,HttpServletRequest request){
+        //判断用户是否登录
+        User currentUser = userService.getCurrentUser(request);
+        if (currentUser == null){
+            throw new BusinessException(ErrorCode.NO_LOGIN);
+        }
+        if (id <= 0){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        postService.likePost(id,currentUser.getId());
+        return ResultUtils.success("ok");
+    }
 }
 
 
