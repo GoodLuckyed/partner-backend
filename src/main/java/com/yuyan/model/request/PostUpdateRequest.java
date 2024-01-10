@@ -18,7 +18,6 @@ public class PostUpdateRequest implements Serializable {
     /**
      * 帖文id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

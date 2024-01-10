@@ -251,7 +251,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             Set<String> tempTagNameSet =  gson.fromJson(tagsStr,new TypeToken<Set<String>>(){}.getType());
             tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
             for (String tagName : tagNameList) {
-                if (!tempTagNameSet.contains(tagName)) {
+                //转换为小写后进行比较
+                if (!tempTagNameSet.stream().map(String::toLowerCase).collect(Collectors.toSet()).contains(tagName.toLowerCase())) {
                     return false;
                 }
             }

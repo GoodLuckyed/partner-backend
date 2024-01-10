@@ -97,7 +97,7 @@ public class PostController {
 
     @ApiOperation("更新帖文")
     @PutMapping("/update")
-    public BaseResponse<Boolean> updatePost(@RequestBody PostUpdateRequest postUpdateRequest,HttpServletRequest request){
+    public BaseResponse<Boolean> updatePost(PostUpdateRequest postUpdateRequest,HttpServletRequest request){
         if (postUpdateRequest == null){
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }

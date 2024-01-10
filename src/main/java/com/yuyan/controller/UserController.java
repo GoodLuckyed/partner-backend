@@ -6,13 +6,16 @@ import com.yuyan.common.BaseResponse;
 import com.yuyan.common.ErrorCode;
 import com.yuyan.common.ResultUtils;
 import com.yuyan.exception.BusinessException;
+import com.yuyan.model.domain.Follow;
 import com.yuyan.model.domain.User;
 import com.yuyan.model.request.UserLoginRequest;
 import com.yuyan.model.request.UserRegisterRequest;
 import com.yuyan.model.vo.UserVo;
+import com.yuyan.service.FollowService;
 import com.yuyan.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +37,8 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private FollowService followService;
 
     /**
      * 用户注册
@@ -215,13 +220,21 @@ public class UserController {
      * 根据userId获取用户信息
      */
     @GetMapping("/{id}")
-    public BaseResponse<UserVo> getUserById(@PathVariable("id") Long id){
+    public BaseResponse<UserVo> getUserById(@PathVariable("id") Long id,HttpServletRequest request){
         if (id <= 0){
             throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        if (currentUser == null){
+            throw new BusinessException(ErrorCode.NO_LOGIN);
         }
         User user = userService.getById(id);
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user,userVo);
+        LambdaQueryWrapper<Follow> followLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        followLambdaQueryWrapper.eq(Follow::getUserId,currentUser.getId()).eq(Follow::getFollowUserId,id);
+        long count = followService.count(followLambdaQueryWrapper);
+        userVo.setIsFollow(count > 0);
         return ResultUtils.success(userVo);
     }
 }
