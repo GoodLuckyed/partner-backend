@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author lucky
@@ -63,6 +64,20 @@ public class PostController {
         }else {
             return ResultUtils.success(postService.listPostPage(currentPage, title,currentUser.getId()));
         }
+    }
+
+    @ApiOperation("根据帖文名称搜索帖文")
+    @GetMapping("/get/title")
+    public BaseResponse<List<PostVo>>  getPostByTitle(String title, HttpServletRequest request){
+        //判断用户是否登录
+        User currentUser = userService.getCurrentUser(request);
+        if (currentUser == null){
+            throw new BusinessException(ErrorCode.NO_LOGIN);
+        }
+        if (title == null){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        return ResultUtils.success(postService.getPostByTitle(title,currentUser.getId()));
     }
 
     @ApiOperation("根据id查询帖文")

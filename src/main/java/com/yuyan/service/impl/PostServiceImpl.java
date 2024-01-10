@@ -119,6 +119,33 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     }
 
     /**
+     * 根据标题查询帖文
+     * @param title
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<PostVo> getPostByTitle(String title, Long userId) {
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(StringUtils.isNotBlank(title), Post::getTitle, title);
+        queryWrapper.orderBy(true, false, Post::getCreateTime);
+        List<Post> postList = this.list(queryWrapper);
+        List<PostVo> postVoList = postList.stream().map((post) -> {
+            PostVo postVo = new PostVo();
+            BeanUtils.copyProperties(post, postVo);
+            if (userId != null) {
+                //判断当前用户是否点赞
+                LambdaQueryWrapper<PostLike> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(PostLike::getPostId, post.getId()).eq(PostLike::getUserId, userId);
+                long count = postLikeService.count(wrapper);
+                postVo.setIsLike(count > 0);
+            }
+            return postVo;
+        }).collect(Collectors.toList());
+        return postVoList;
+    }
+
+    /**
      * 根据id查询帖文
      *
      * @param id

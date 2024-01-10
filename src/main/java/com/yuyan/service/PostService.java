@@ -9,6 +9,8 @@ import com.yuyan.model.request.PostAddRequest;
 import com.yuyan.model.request.PostUpdateRequest;
 import com.yuyan.model.vo.PostVo;
 
+import java.util.List;
+
 /**
 * @author lucky
 * @description 针对表【post】的数据库操作Service
@@ -32,6 +34,14 @@ public interface PostService extends IService<Post> {
      * @return
      */
     Page<PostVo> listPostPage(long currentPage, String title, Long userId);
+
+    /**
+     * 根据标题查询帖文
+     * @param title
+     * @param userId
+     * @return
+     */
+    List<PostVo> getPostByTitle(String title, Long userId);
 
     /**
      * 根据id查询帖文
