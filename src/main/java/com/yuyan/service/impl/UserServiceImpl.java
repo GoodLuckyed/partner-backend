@@ -271,23 +271,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public Page<User> recommend(Page<User> pageModel, HttpServletRequest request) {
-        //先查缓存
-        User currentUser = getCurrentUser(request);
-        String redisKey = String.format("partner:user:recommend:%s",currentUser.getId());
-        Page<User> userPage = (Page<User>) redisTemplate.opsForValue().get(redisKey);
-        if (userPage != null){
-            return userPage;
-        }
-        //如果没有缓存，再查数据库
+//        //先查缓存
+//        User currentUser = getCurrentUser(request);
+//        String redisKey = String.format("partner:user:recommend:%s",currentUser.getId());
+//        Page<User> userPage = (Page<User>) redisTemplate.opsForValue().get(redisKey);
+//        if (userPage != null){
+//            return userPage;
+//        }
+//        //如果没有缓存，再查数据库
+//        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+//        userPage = userMapper.selectPage(pageModel, queryWrapper);
+//        //写入缓存
+//        try {
+//            redisTemplate.opsForValue().set(redisKey,userPage,24, TimeUnit.HOURS);
+//        } catch (Exception e) {
+//            log.error("redis set key error:{}",e);
+//        }
+//        return userPage;
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        userPage = userMapper.selectPage(pageModel, queryWrapper);
-        //写入缓存
-        try {
-            redisTemplate.opsForValue().set(redisKey,userPage,24, TimeUnit.HOURS);
-        } catch (Exception e) {
-            log.error("redis set key error:{}",e);
-        }
-        return userPage;
+        return userMapper.selectPage(pageModel, queryWrapper);
     }
 
     /**

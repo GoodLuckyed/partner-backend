@@ -1,8 +1,10 @@
 package com.yuyan.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.yuyan.common.BaseResponse;
 import com.yuyan.common.ErrorCode;
 import com.yuyan.common.ResultUtils;
@@ -13,6 +15,7 @@ import com.yuyan.model.domain.UserTeam;
 import com.yuyan.model.dto.TeamQuery;
 import com.yuyan.model.request.*;
 import com.yuyan.model.vo.TeamUserVo;
+import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.TeamService;
 import com.yuyan.service.UserService;
 import com.yuyan.service.UserTeamService;
@@ -116,7 +119,21 @@ public class TeamController {
         userTeamQueryWrapper.in("teamId",teamIdList);
         List<UserTeam> userTeamList = userTeamService.list(userTeamQueryWrapper);
         Map<Long, List<UserTeam>> teamIdUserTeamList = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
-        teamList.forEach(teamUserVo -> teamUserVo.setHasJoinNum(teamIdUserTeamList.getOrDefault(teamUserVo.getId(),new ArrayList<>()).size()));
+        teamList.forEach(teamUserVo -> {
+            List<UserTeam> teamMembers  = teamIdUserTeamList.getOrDefault(teamUserVo.getId(), new ArrayList<>());
+            teamUserVo.setHasJoinNum(teamMembers.size());
+            //查询队伍成员的用户信息
+            List<Long> memberUserIds  = teamMembers.stream().map(UserTeam::getUserId).collect(Collectors.toList());
+            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            userLambdaQueryWrapper.in(User::getId,memberUserIds);
+            List<User> userList = userService.list(userLambdaQueryWrapper);
+            List<UserVo> memberList = userList.stream().map(user -> {
+                UserVo userVo = new UserVo();
+                BeanUtils.copyProperties(user, userVo);
+                return userVo;
+            }).collect(Collectors.toList());
+            teamUserVo.setMemberList(memberList);
+        });
         return ResultUtils.success(teamList);
     }
 
