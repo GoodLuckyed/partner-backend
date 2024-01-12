@@ -77,7 +77,7 @@ public class TeamController {
 
     @ApiOperation("根据id查询队伍")
     @GetMapping("/getTeam")
-    public BaseResponse<Team> getTeamById(@RequestParam("id") Long id) {
+    public BaseResponse<TeamUserVo> getTeamById(@RequestParam("id") Long id) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
@@ -85,7 +85,29 @@ public class TeamController {
         if (team == null) {
             throw new BusinessException(ErrorCode.PARAM_NULL);
         }
-        return ResultUtils.success(team);
+        TeamUserVo teamUserVo = new TeamUserVo();
+        BeanUtils.copyProperties(team,teamUserVo);
+        //查询队伍的创建人信息
+        User user = userService.getById(team.getUserId());
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        teamUserVo.setCreateUser(userVo);
+        //查询队伍成员的用户信息
+        LambdaQueryWrapper<UserTeam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserTeam::getTeamId,team.getId());
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        List<Long> userIds = userTeamList.stream().map(UserTeam::getUserId).collect(Collectors.toList());
+        //已加入队伍的人数
+        teamUserVo.setHasJoinNum(userIds.size());
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.in(User::getId,userIds);
+        List<UserVo> memberList = userService.list(userLambdaQueryWrapper).stream().map(user1 -> {
+            UserVo userVo1 = new UserVo();
+            BeanUtils.copyProperties(user1, userVo1);
+            return userVo1;
+        }).collect(Collectors.toList());
+        teamUserVo.setMemberList(memberList);
+        return ResultUtils.success(teamUserVo);
     }
 
     @ApiOperation("根据条件查询队伍")
