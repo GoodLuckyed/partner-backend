@@ -1,5 +1,6 @@
 package com.yuyan.service.impl;
 
+import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -133,7 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return 脱敏后的用户信息
      */
     @Override
-    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public String userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         //1.校验数据非空
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAM_ERROR, "请求参数为空");
@@ -166,10 +167,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //3.用户信息脱敏处理
         User safeUser = getSafetyUser(user);
+        String token = UUID.randomUUID().toString(true);
         //4.记录用户登录的状态
-        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATUS, safeUser);
+        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATUS +token, safeUser);
         //返回脱敏后的用户信息
-        return safeUser;
+        return token;
     }
 
     /**
@@ -208,7 +210,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public int userLogout(HttpServletRequest request) {
-        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATUS);
+        String token = request.getHeader("Authorization");
+        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATUS + token);
         return -1;
     }
 
@@ -219,7 +222,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getCurrentUser(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        String token = request.getHeader("Authorization");
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         User currentUser = (User) userObj;
         if (currentUser == null){
             throw new BusinessException(ErrorCode.NO_LOGIN);
@@ -306,7 +310,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (request == null){
             return 0;
         }
-        User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        String token = request.getHeader("Authorization");
+        User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         //如果为管理员可以更新任何用户
         //如果不是管理员,只允许更新自己的信息
         if (!isAdmin(loginUser) && loginUser.getId() != user.getId()){
@@ -326,7 +331,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS);
+        String token = request.getHeader("Authorization");
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         User user = (User) userObj;
         if (user == null || user.getUserRole() != UserConstant.ADMIN_ROLE) {
             return false;

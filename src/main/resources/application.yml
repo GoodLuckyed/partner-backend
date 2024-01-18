@@ -21,7 +21,7 @@ spring:
     port: 6379
     database: 0
   session:
-    timeout: 86400
+    timeout: 1800 #30分钟
     store-type: redis
   mvc:
     pathmatch:

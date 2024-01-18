@@ -29,6 +29,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -45,7 +46,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 @Component
-@ServerEndpoint(value = "/websocket/{userId}/{teamId}",configurator = HttpSessionConfigurator.class)
+@ServerEndpoint(value = "/websocket/{userId}/{teamId}/{token}",configurator = HttpSessionConfigurator.class)
 public class WebSocket{
 
     //存放队伍的连接信息
@@ -62,6 +63,10 @@ public class WebSocket{
 
     //httpSession中存储着当前登录的用户信息
     private HttpSession httpSession;
+
+    //用户的token
+    private String token;
+
 
     //房间在线人数
     private static int onlineCount = 0;
@@ -100,6 +105,7 @@ public class WebSocket{
         WebSocket.followService = followService;
     }
 
+
     /**
      * 连接建立成功调用的方法
      * @param session
@@ -108,14 +114,15 @@ public class WebSocket{
      * @param config
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userId") String userId, @PathParam("teamId") String teamId, EndpointConfig config){
+    public void onOpen(Session session, @PathParam("userId") String userId, @PathParam("teamId") String teamId,@PathParam("token") String token , EndpointConfig config){
         if (StringUtils.isBlank(userId) || "undefined".equals(userId)) {
             sendError(userId,"参数有误");
             return;
         }
+        this.token  = token;
         //获取httpsession 用户的信息
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-        User user = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS);
+        User user = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         if (user != null){
             this.httpSession = httpSession;
             this.session = session;
@@ -219,7 +226,7 @@ public class WebSocket{
             //封装消息
             MessageVo messageVo = chatService.chatResult(fromUser.getId(), toId, text, chatType, DateUtil.date(System.currentTimeMillis()));
             //获取当前登录的用户信息
-            User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS);
+            User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS + token);
             if (currentUser.getId() == fromUser.getId()){
                 messageVo.setIsMy(true);
             }
@@ -256,7 +263,7 @@ public class WebSocket{
         if (fromUser.getId() == team.getUserId() || fromUser.getUserRole() == UserConstant.ADMIN_ROLE){
             messageVo.setIsAdmin(true);
         }
-        User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS);
+        User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         if (fromUser.getId() == currentUser.getId()){
             messageVo.setIsMy(true);
         }
@@ -290,7 +297,7 @@ public class WebSocket{
         if (fromUser.getUserRole() == UserConstant.ADMIN_ROLE){
             messageVo.setIsAdmin(true);
         }
-        User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS);
+        User currentUser = (User) httpSession.getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         if (fromUser.getId() == currentUser.getId()){
             messageVo.setIsMy(true);
         }
