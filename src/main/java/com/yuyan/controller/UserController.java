@@ -144,6 +144,9 @@ public class UserController {
         Page<User> userPage = userService.recommend(pageModel,request);
         //获取查询结果
         List<User> userList = userPage.getRecords();
+        //从查询结果中排除自己
+        User currentUser = userService.getCurrentUser(request);
+        userList = userList.stream().filter(user -> user.getId() != currentUser.getId()).collect(Collectors.toList());
         //脱敏
         userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(userList);

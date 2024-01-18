@@ -77,7 +77,7 @@ public class TeamController {
 
     @ApiOperation("根据id查询队伍")
     @GetMapping("/getTeam")
-    public BaseResponse<TeamUserVo> getTeamById(@RequestParam("id") Long id) {
+    public BaseResponse<TeamUserVo> getTeamById(@RequestParam("id") Long id,HttpServletRequest request) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
@@ -107,6 +107,12 @@ public class TeamController {
             return userVo1;
         }).collect(Collectors.toList());
         teamUserVo.setMemberList(memberList);
+        //判断当前查看队伍的用户是否加入队伍
+        User currentUser = userService.getCurrentUser(request);
+        LambdaQueryWrapper<UserTeam> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserTeam::getUserId,currentUser.getId()).eq(UserTeam::getTeamId,id);
+        long count = userTeamService.count(wrapper);
+        teamUserVo.setHasJoin(count > 0);
         return ResultUtils.success(teamUserVo);
     }
 
