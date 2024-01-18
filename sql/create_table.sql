@@ -150,3 +150,16 @@ CREATE TABLE `follow` (
       `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
       PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 聊天消息表
+CREATE TABLE `chat` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '聊天记录id',
+    `fromId` bigint(20) NOT NULL COMMENT '发送消息用户id',
+    `toId` bigint(20) DEFAULT NULL COMMENT '接受消息用户id',
+    `text` varchar(512) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '消息内容',
+    `chatType` tinyint(4) NOT NULL COMMENT '聊天类型 1-私聊 2-群聊',
+    `createTime` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `teamId` bigint(20) DEFAULT NULL COMMENT '队伍id',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
