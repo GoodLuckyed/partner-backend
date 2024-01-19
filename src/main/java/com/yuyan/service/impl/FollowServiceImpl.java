@@ -3,9 +3,17 @@ package com.yuyan.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuyan.model.domain.Follow;
+import com.yuyan.model.domain.User;
+import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.FollowService;
 import com.yuyan.mapper.FollowMapper;
+import com.yuyan.service.UserService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author lucky
@@ -14,6 +22,9 @@ import org.springframework.stereotype.Service;
 */
 @Service
 public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> implements FollowService{
+
+    @Autowired
+    private UserService userService;
 
     /**
      * 关注用户
@@ -35,6 +46,52 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             //关注过了 取消关注
             this.remove(followLambdaQueryWrapper);
         }
+    }
+
+    /**
+     * 获取我关注的用户列表
+     * @param currentUser
+     * @return
+     */
+    @Override
+    public List<UserVo> myFollow(User currentUser) {
+        Long userId = currentUser.getId();
+        LambdaQueryWrapper<Follow> followLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        followLambdaQueryWrapper.eq(Follow::getUserId,userId);
+        List<Follow> followList = this.list(followLambdaQueryWrapper);
+        List<Long> idList = followList.stream().map(Follow::getFollowUserId).collect(Collectors.toList());
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.in(User::getId,idList);
+        List<User> userList = userService.list(userLambdaQueryWrapper);
+        List<UserVo> userVoList = userList.stream().map(user -> {
+            UserVo userVo = new UserVo();
+            BeanUtils.copyProperties(user, userVo);
+            return userVo;
+        }).collect(Collectors.toList());
+        return userVoList;
+    }
+
+    /**
+     * 获取粉丝列表
+     * @param currentUser
+     * @return
+     */
+    @Override
+    public List<UserVo> myFans(User currentUser) {
+        Long userId = currentUser.getId();
+        LambdaQueryWrapper<Follow> followLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        followLambdaQueryWrapper.eq(Follow::getFollowUserId,userId);
+        List<Follow> followList = this.list(followLambdaQueryWrapper);
+        List<Long> idList = followList.stream().map(Follow::getUserId).collect(Collectors.toList());
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.in(User::getId,idList);
+        List<User> userList = userService.list(userLambdaQueryWrapper);
+        List<UserVo> userVoList = userList.stream().map(user -> {
+            UserVo userVo = new UserVo();
+            BeanUtils.copyProperties(user, userVo);
+            return userVo;
+        }).collect(Collectors.toList());
+        return userVoList;
     }
 }
 

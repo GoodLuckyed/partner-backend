@@ -75,4 +75,11 @@ public interface PostService extends IService<Post> {
      * @param userId
      */
     void likePost(Long id, Long userId);
+
+    /**
+     * 获取我写的帖文
+     * @param currentUser
+     * @return
+     */
+    List<PostVo> myPost(User currentUser);
 }

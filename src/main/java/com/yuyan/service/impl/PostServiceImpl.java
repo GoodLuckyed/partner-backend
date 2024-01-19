@@ -291,6 +291,33 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             }
         }
     }
+
+    /**
+     * 获取我写的帖文
+     * @param currentUser
+     * @return
+     */
+    @Override
+    public List<PostVo> myPost(User currentUser) {
+        Long userId = currentUser.getId();
+        LambdaQueryWrapper<Post> postLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        postLambdaQueryWrapper.eq(Post::getUserId,userId);
+        List<Post> postList = this.list(postLambdaQueryWrapper);
+        List<PostVo> postVoList = postList.stream().map(post -> {
+            PostVo postVo = new PostVo();
+            BeanUtils.copyProperties(post, postVo);
+            User user = userService.getById(userId);
+            UserVo userVo = new UserVo();
+            BeanUtils.copyProperties(user, userVo);
+            postVo.setAuthor(userVo);
+            LambdaQueryWrapper<PostLike> likeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            likeLambdaQueryWrapper.eq(PostLike::getUserId,userId).eq(PostLike::getPostId,post.getId());
+            long count = postLikeService.count(likeLambdaQueryWrapper);
+            postVo.setIsLike(count > 0);
+            return postVo;
+        }).collect(Collectors.toList());
+        return postVoList;
+    }
 }
 
 

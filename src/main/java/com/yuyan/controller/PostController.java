@@ -140,6 +140,14 @@ public class PostController {
         postService.likePost(id,currentUser.getId());
         return ResultUtils.success("ok");
     }
+
+    @ApiOperation("获取我写的帖文")
+    @GetMapping("/list/myPost")
+    public BaseResponse<List<PostVo>> myPost(HttpServletRequest request){
+        User currentUser = userService.getCurrentUser(request);
+        List<PostVo> postVoList = postService.myPost(currentUser);
+        return ResultUtils.success(postVoList);
+    }
 }
 
 

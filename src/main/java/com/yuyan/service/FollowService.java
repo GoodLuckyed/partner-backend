@@ -2,6 +2,10 @@ package com.yuyan.service;
 
 import com.yuyan.model.domain.Follow;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuyan.model.domain.User;
+import com.yuyan.model.vo.UserVo;
+
+import java.util.List;
 
 /**
 * @author lucky
@@ -16,4 +20,18 @@ public interface FollowService extends IService<Follow> {
      * @param userId 当前用户id
      */
     void followUser(Long id, Long userId);
+
+    /**
+     * 获取我关注的用户列表
+     * @param currentUser
+     * @return
+     */
+    List<UserVo> myFollow(User currentUser);
+
+    /**
+     * 获取粉丝列表
+     * @param currentUser
+     * @return
+     */
+    List<UserVo> myFans(User currentUser);
 }
