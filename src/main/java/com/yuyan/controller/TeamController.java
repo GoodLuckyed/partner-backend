@@ -162,6 +162,8 @@ public class TeamController {
             }).collect(Collectors.toList());
             teamUserVo.setMemberList(memberList);
         });
+        //按照创建时间倒序排序
+        teamList.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
         return ResultUtils.success(teamList);
     }
 
@@ -192,6 +194,31 @@ public class TeamController {
         List<Long> idList = userTeamList.stream().map(UserTeam::getTeamId).collect(Collectors.toList());
         teamQuery.setIdList(idList);
         List<TeamUserVo> teamList = teamService.listTeams(teamQuery, true);
+        //设置是hasJoin为true
+        teamList.stream().map(teamUserVo -> {
+            teamUserVo.setHasJoin(true);
+            return teamUserVo;
+        }).collect(Collectors.toList());
+        //查询已加入的人数
+        queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("teamId",idList);
+        userTeamList = userTeamService.list(queryWrapper);
+        Map<Long, List<UserTeam>> teamIdUserTeamList = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        teamList.forEach(teamUserVo -> {
+            List<UserTeam> teamMembers  = teamIdUserTeamList.getOrDefault(teamUserVo.getId(), new ArrayList<>());
+            teamUserVo.setHasJoinNum(teamMembers.size());
+            //查询队伍成员的用户信息
+            List<Long> memberUserIds  = teamMembers.stream().map(UserTeam::getUserId).collect(Collectors.toList());
+            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            userLambdaQueryWrapper.in(User::getId,memberUserIds);
+            List<User> userList = userService.list(userLambdaQueryWrapper);
+            List<UserVo> memberList = userList.stream().map(user -> {
+                UserVo userVo = new UserVo();
+                BeanUtils.copyProperties(user, userVo);
+                return userVo;
+            }).collect(Collectors.toList());
+            teamUserVo.setMemberList(memberList);
+        });
         return ResultUtils.success(teamList);
     }
 

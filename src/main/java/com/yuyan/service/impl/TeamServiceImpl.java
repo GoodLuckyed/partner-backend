@@ -99,7 +99,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         //e. 如果 status 是加密状态，一定要有密码，且密码 <= 32
         String password = team.getPassword();
         if (TeamStatusEnum.SECRET.equals(teamStatusEnum)) {
-            if (StringUtils.isBlank(password) || password.length() <= 32) {
+            if (StringUtils.isBlank(password) || password.length() >= 32) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "密码设置不正确");
             }
         }
@@ -156,7 +156,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             }
             String searchText = teamQuery.getSearchText();
             if (StringUtils.isNotBlank(searchText)) {
-                queryWrapper.and(qw -> qw.like("name", searchText).or().like("name", searchText));
+                queryWrapper.and(qw -> qw.like("name", searchText).or().like("description", searchText));
             }
             String name = teamQuery.getName();
             if (StringUtils.isNotBlank(name)) {
@@ -179,13 +179,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             //根据队伍状态查询
             Integer status = teamQuery.getStatus();
             TeamStatusEnum teamStatusEnum = TeamStatusEnum.getEnumByValue(status);
-            if (teamStatusEnum == null) {
-                teamStatusEnum = TeamStatusEnum.PUBLIC;
+            if (teamStatusEnum != null) {
+                //teamStatusEnum = TeamStatusEnum.PUBLIC;
+                queryWrapper.eq("status", teamStatusEnum.getValue());
             }
             if (!isAdmin && teamStatusEnum.equals(TeamStatusEnum.PRIVATE)) {
                 throw new BusinessException(ErrorCode.NO_AUTH);
             }
-            queryWrapper.eq("status", teamStatusEnum.getValue());
         }
         //不展示过期的队伍 expireTime is null or expireTime > now()
         queryWrapper.and(qw -> qw.gt("expireTime", new Date()).or().isNull("expireTime"));
