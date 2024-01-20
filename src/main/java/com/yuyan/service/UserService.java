@@ -3,6 +3,7 @@ package com.yuyan.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.request.UpdateTagRequest;
 import com.yuyan.model.request.UserAvatarRequest;
 import com.yuyan.model.request.UserUpdatePassword;
 
@@ -114,4 +115,12 @@ public interface UserService extends IService<User> {
      * @param currentUser
      */
     void uploadAvatar(UserAvatarRequest userAvatarRequest, User currentUser);
+
+    /**
+     * 修改标签
+     * @param updateTagRequest
+     * @param currentUser
+     * @return
+     */
+    int updateTag(UpdateTagRequest updateTagRequest, User currentUser);
 }

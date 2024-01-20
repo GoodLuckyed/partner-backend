@@ -13,6 +13,7 @@ import com.yuyan.common.ResultUtils;
 import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.request.UpdateTagRequest;
 import com.yuyan.model.request.UserAvatarRequest;
 import com.yuyan.model.request.UserUpdatePassword;
 import com.yuyan.service.FileUploadService;
@@ -397,6 +398,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException(e);
         }
         this.updateById(user);
+    }
+
+    /**
+     * 修改标签
+     * @param updateTagRequest
+     * @param currentUser
+     * @return
+     */
+    @Override
+    public int updateTag(UpdateTagRequest updateTagRequest, User currentUser) {
+        long id = updateTagRequest.getId();
+        if (id < 0){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        //限制标签的数量
+        Set<String> newTagList = updateTagRequest.getTagList();
+        if (newTagList.size() > 7){
+            throw new BusinessException(ErrorCode.PARAM_ERROR,"标签数量不能超过7个");
+        }
+        //权限校验
+        if (!isAdmin(currentUser) && currentUser.getId() != id){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User user = userMapper.selectById(id);
+        Gson gson = new Gson();
+        Set<String> oldTagList = gson.fromJson(user.getTags(), new TypeToken<Set<String>>() {
+        }.getType());
+        //转换成小写
+        Set<String> oldTagListLow = oldTagList.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> newTagListLow = newTagList.stream().map(String::toLowerCase).collect(Collectors.toSet());
+
+        //添加newTagList中有,oldTagList中没有的标签
+        oldTagListLow.addAll(newTagListLow.stream().filter(tag -> !oldTagListLow.contains(tag)).collect(Collectors.toSet()));
+        //移除oldTagList中有,newTagList中没有的标签
+        oldTagListLow.removeAll(oldTagListLow.stream().filter(tag -> !newTagListLow.contains(tag)).collect(Collectors.toSet()));
+        String tagJson = gson.toJson(oldTagListLow);
+        user.setTags(tagJson);
+        return userMapper.updateById(user);
     }
 
     /**

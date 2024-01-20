@@ -9,10 +9,7 @@ import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.Follow;
 import com.yuyan.model.domain.User;
-import com.yuyan.model.request.UserAvatarRequest;
-import com.yuyan.model.request.UserLoginRequest;
-import com.yuyan.model.request.UserRegisterRequest;
-import com.yuyan.model.request.UserUpdatePassword;
+import com.yuyan.model.request.*;
 import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.FollowService;
 import com.yuyan.service.UserService;
@@ -209,6 +206,25 @@ public class UserController {
         //修改成功后清除登录态
         String token = request.getHeader("Authorization");
         redisTemplate.delete(UserConstant.USER_LOGIN_STATUS + token);
+        return ResultUtils.success(updateTag);
+    }
+
+/**
+     * 修改标签
+     * @param updateTagRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/tags")
+    public BaseResponse<Integer> updateTag(@RequestBody UpdateTagRequest updateTagRequest,HttpServletRequest request){
+        if (updateTagRequest == null){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        int updateTag = userService.updateTag(updateTagRequest,currentUser);
+        if (updateTag < 0){
+            throw new BusinessException(ErrorCode.EXECUTE_ERR);
+        }
         return ResultUtils.success(updateTag);
     }
 
