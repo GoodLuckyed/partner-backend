@@ -13,6 +13,9 @@ import com.yuyan.common.ResultUtils;
 import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.request.UserAvatarRequest;
+import com.yuyan.model.request.UserUpdatePassword;
+import com.yuyan.service.FileUploadService;
 import com.yuyan.service.UserService;
 import com.yuyan.mapper.UserMapper;
 import com.yuyan.utils.AlgorithmUtils;
@@ -26,6 +29,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +53,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private FileUploadService fileUploadService;
 
     /**
      * 盐值 ==》 用来混淆密码
@@ -322,6 +329,74 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAM_NULL);
         }
         return userMapper.updateById(user);
+    }
+
+    /**
+     * 修改密码
+     * @param userUpdatePassword
+     * @param currentUser
+     * @return
+     */
+    @Override
+    public int updatePassword(UserUpdatePassword userUpdatePassword, User currentUser) {
+        long id = userUpdatePassword.getId();
+        String oldPassword = userUpdatePassword.getOldPassword();
+        String newPassword = userUpdatePassword.getNewPassword();
+        String checkPassword = userUpdatePassword.getCheckPassword();
+        if (StringUtils.isAnyBlank(oldPassword,newPassword,checkPassword)){
+            throw new BusinessException(ErrorCode.PARAM_ERROR,"输入有误");
+        }
+        //密码不小于8位
+        if (oldPassword.length() < 8 || newPassword.length() < 8 || checkPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "密码长度小于8位");
+        }
+        //密码和校验密码相同
+        if (!newPassword.equals(checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "两次密码输入不一致");
+        }
+        //权限校验
+        if (!isAdmin(currentUser) && currentUser.getId() != id){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + oldPassword).getBytes());
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.eq(User::getUserAccount,currentUser.getUserAccount()).eq(User::getUserPassword,encryptPassword);
+        User user = this.getOne(userLambdaQueryWrapper);
+        if (user == null){
+            throw new BusinessException(ErrorCode.PARAM_NULL);
+        }
+        String newEncryptPassword = DigestUtils.md5DigestAsHex((SALT + newPassword).getBytes());
+        user.setUserPassword(newEncryptPassword);
+        return userMapper.updateById(user);
+    }
+
+    /**
+     * 上传头像
+     * @param userAvatarRequest
+     * @param currentUser
+     */
+    @Override
+    public void uploadAvatar(UserAvatarRequest userAvatarRequest, User currentUser) {
+        long id = userAvatarRequest.getId();
+        Long userId = currentUser.getId();
+        if (!isAdmin(currentUser) && userId != id){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User user = this.getById(id);
+        if (user == null){
+            throw new BusinessException(ErrorCode.PARAM_NULL);
+        }
+        try {
+            MultipartFile avatarImg = userAvatarRequest.getAvatarImg();
+            String avatarUrl = user.getAvatarUrl();
+            if (avatarImg != null){
+                avatarUrl = fileUploadService.fileUpload(avatarImg);
+            }
+            user.setAvatarUrl(avatarUrl);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        this.updateById(user);
     }
 
     /**

@@ -3,6 +3,8 @@ package com.yuyan.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.request.UserAvatarRequest;
+import com.yuyan.model.request.UserUpdatePassword;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -97,4 +99,19 @@ public interface UserService extends IService<User> {
      * @return
      */
     List<User> matchUsers(long num, User currentUser);
+
+    /**
+     * 修改密码
+     * @param userUpdatePassword
+     * @param currentUser
+     * @return
+     */
+    int updatePassword(UserUpdatePassword userUpdatePassword, User currentUser);
+
+    /**
+     * 上传头像
+     * @param userAvatarRequest
+     * @param currentUser
+     */
+    void uploadAvatar(UserAvatarRequest userAvatarRequest, User currentUser);
 }

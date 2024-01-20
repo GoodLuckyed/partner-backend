@@ -5,17 +5,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuyan.common.BaseResponse;
 import com.yuyan.common.ErrorCode;
 import com.yuyan.common.ResultUtils;
+import com.yuyan.constant.UserConstant;
 import com.yuyan.exception.BusinessException;
 import com.yuyan.model.domain.Follow;
 import com.yuyan.model.domain.User;
+import com.yuyan.model.request.UserAvatarRequest;
 import com.yuyan.model.request.UserLoginRequest;
 import com.yuyan.model.request.UserRegisterRequest;
+import com.yuyan.model.request.UserUpdatePassword;
 import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.FollowService;
 import com.yuyan.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +43,9 @@ public class UserController {
     private UserService userService;
     @Resource
     private FollowService followService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 用户注册
@@ -181,6 +188,44 @@ public class UserController {
             throw new BusinessException(ErrorCode.EXECUTE_ERR);
         }
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 修改密码
+     * @param userUpdatePassword
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/password")
+    public BaseResponse<Integer> updatePassword(@RequestBody UserUpdatePassword userUpdatePassword,HttpServletRequest request){
+        if (userUpdatePassword == null){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        int updateTag = userService.updatePassword(userUpdatePassword,currentUser);
+        if (updateTag < 0){
+            throw new BusinessException(ErrorCode.EXECUTE_ERR);
+        }
+        //修改成功后清除登录态
+        String token = request.getHeader("Authorization");
+        redisTemplate.delete(UserConstant.USER_LOGIN_STATUS + token);
+        return ResultUtils.success(updateTag);
+    }
+
+    /**
+     * 上传头像
+     * @param userAvatarRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/upload")
+    public BaseResponse<String> uploadAvatar(UserAvatarRequest userAvatarRequest,HttpServletRequest request){
+        if (userAvatarRequest == null){
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        userService.uploadAvatar(userAvatarRequest,currentUser);
+        return ResultUtils.success("上传成功");
     }
 
     /**
