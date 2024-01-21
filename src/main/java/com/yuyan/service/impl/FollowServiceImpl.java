@@ -8,10 +8,13 @@ import com.yuyan.model.vo.UserVo;
 import com.yuyan.service.FollowService;
 import com.yuyan.mapper.FollowMapper;
 import com.yuyan.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         LambdaQueryWrapper<Follow> followLambdaQueryWrapper = new LambdaQueryWrapper<>();
         followLambdaQueryWrapper.eq(Follow::getUserId,userId);
         List<Follow> followList = this.list(followLambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(followList)){
+            return new ArrayList<>();
+        }
         List<Long> idList = followList.stream().map(Follow::getFollowUserId).collect(Collectors.toList());
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userLambdaQueryWrapper.in(User::getId,idList);
@@ -82,6 +88,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         LambdaQueryWrapper<Follow> followLambdaQueryWrapper = new LambdaQueryWrapper<>();
         followLambdaQueryWrapper.eq(Follow::getFollowUserId,userId);
         List<Follow> followList = this.list(followLambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(followList)){
+            return new ArrayList<>();
+        }
         List<Long> idList = followList.stream().map(Follow::getUserId).collect(Collectors.toList());
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userLambdaQueryWrapper.in(User::getId,idList);

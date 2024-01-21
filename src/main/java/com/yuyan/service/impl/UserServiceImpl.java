@@ -4,6 +4,7 @@ import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.support.BiIntFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
@@ -72,10 +73,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
+    public long userRegister(String username,String userAccount, String userPassword, String checkPassword) {
         //校验数据非空
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
+        if (StringUtils.isAnyBlank(username,userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAM_ERROR, "请求参数为空");
+        }
+        if (username.length() > 20){
+            throw new BusinessException(ErrorCode.PARAM_ERROR,"用户名太长");
         }
         //账号长度不小于4位
         if (userAccount.length() < 4) {
@@ -97,9 +101,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         //校验星球编号的长度
-        if (planetCode.length() > 5) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "星球编号太长");
-        }
+//        if (planetCode.length() > 5) {
+//            throw new BusinessException(ErrorCode.PARAM_ERROR, "星球编号太长");
+//        }
 
         //账户不能重复
 //        QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -111,21 +115,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAM_NULL, "用户已存在");
         }
         //星球编号不能重复
-        wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getPlanetCode, planetCode);
-        count = userMapper.selectCount(wrapper);
-        if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAM_NULL, "星球编号已存在");
-        }
+//        wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(User::getPlanetCode, planetCode);
+//        count = userMapper.selectCount(wrapper);
+//        if (count > 0) {
+//            throw new BusinessException(ErrorCode.PARAM_NULL, "星球编号已存在");
+//        }
 
         //密码加密
         final String SALT = "yuyan";
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         //插入数据
         User user = new User();
+        user.setUsername(username);
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
-        user.setPlanetCode(planetCode);
         user.setCreateTime(new Date());
         int insert = userMapper.insert(user);
         if (insert < 0) {
@@ -322,7 +326,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATUS + token);
         //如果为管理员可以更新任何用户
         //如果不是管理员,只允许更新自己的信息
-        if (!isAdmin(loginUser) && loginUser.getId() != user.getId()){
+         if (!isAdmin(loginUser) && !loginUser.getId().equals(userId)){
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         User oldUser = userMapper.selectById(userId);
@@ -425,6 +429,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Gson gson = new Gson();
         Set<String> oldTagList = gson.fromJson(user.getTags(), new TypeToken<Set<String>>() {
         }.getType());
+        if (oldTagList == null){
+            String newJson = gson.toJson(newTagList);
+            user.setTags(newJson);
+            return userMapper.updateById(user);
+        }
+
         //转换成小写
         Set<String> oldTagListLow = oldTagList.stream().map(String::toLowerCase).collect(Collectors.toSet());
         Set<String> newTagListLow = newTagList.stream().map(String::toLowerCase).collect(Collectors.toSet());

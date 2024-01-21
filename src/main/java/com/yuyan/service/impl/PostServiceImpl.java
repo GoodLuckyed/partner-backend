@@ -30,8 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -303,6 +305,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         LambdaQueryWrapper<Post> postLambdaQueryWrapper = new LambdaQueryWrapper<>();
         postLambdaQueryWrapper.eq(Post::getUserId,userId);
         List<Post> postList = this.list(postLambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(postList)){
+            return new ArrayList<>();
+        }
         List<PostVo> postVoList = postList.stream().map(post -> {
             PostVo postVo = new PostVo();
             BeanUtils.copyProperties(post, postVo);
