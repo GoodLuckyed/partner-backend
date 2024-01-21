@@ -98,7 +98,7 @@ CREATE TABLE `post` (
     `image` varchar(1024) DEFAULT NULL COMMENT '图片',
     `userId` bigint(20) NOT NULL COMMENT '创建人',
     `likes` int(8) DEFAULT '0' COMMENT '点赞数量',
-    `comments` int(8) DEFAULT NULL COMMENT '评论数量',
+    `comments` int(8) DEFAULT '0' COMMENT '评论数量',
     `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete` int(11) NOT NULL DEFAULT '0' COMMENT '是否删除',
