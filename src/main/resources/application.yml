@@ -36,7 +36,7 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值(默认为 1)
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
 aliyun:
-  endpoint: oss-cn-beijing.aliyuncs.com
-  OSS_ACCESS_KEY_ID: LTAI5tRVpDQqkD8ASuZqmBWA
-  OSS_ACCESS_KEY_SECRET: ZN8yj9RPMLdcZKVnRtbA3j83NZFUx3
-  bucketname: partner-backend
+  endpoint: xxx
+  OSS_ACCESS_KEY_ID: xxx
+  OSS_ACCESS_KEY_SECRET: xxx
+  bucketname: xxx
