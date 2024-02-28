@@ -121,11 +121,6 @@ public class UserController {
      */
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
-
-        if (!userService.isAdmin(request)) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
-
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNoneBlank(username)) {
             queryWrapper.like(User::getUsername, username);
